@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-bank-api
+  namespace: open-bank
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: open-bank-api
+  template:
+    metadata:
+      labels:
+        app: open-bank-api
+    spec:
+      containers:
+        - name: open-bank-api
+          image: 
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"

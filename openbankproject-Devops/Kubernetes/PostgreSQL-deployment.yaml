@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open-bank-db
+  namespace: open-bank
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open-bank-db
+  template:
+    metadata:
+      labels:
+        app: open-bank-db
+    spec:
+      containers:
+        - name: postgres
+          image: 
+          env:
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "adminpassword"
+            - name: POSTGRES_DB
+              value: "open_bank_db"
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data

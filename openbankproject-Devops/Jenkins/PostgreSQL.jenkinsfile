@@ -1,0 +1,65 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = 'us-west-2'
+        AWS_ACCOUNT_ID = 'YOUR_AWS_ACCOUNT_ID'
+        ECR_REPOSITORY = 'postgresql-repository'
+        EKS_CLUSTER_NAME = 'my-eks-cluster'
+        IMAGE_TAG = "latest-${env.BUILD_ID}"
+        DOCKER_REGISTRY = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+    }
+
+    stages {
+        stage('Authenticate to AWS ECR') {
+            steps {
+                script {
+                    
+                    sh './scripts/ecr_login.sh'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    
+                    sh "docker build -t ${DOCKER_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} ./postgresql"
+                }
+            }
+        }
+
+        stage('Push to ECR') {
+            steps {
+                script {
+                    
+                    sh "docker push ${DOCKER_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    
+                    sh './scripts/kubectl_apply.sh ./postgresql/k8s/deployment.yaml ./postgresql/k8s/service.yaml'
+                }
+            }
+        }
+
+        stage('Clean up') {
+            steps {
+                script {
+                    
+                    sh "docker rmi ${DOCKER_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            
+        }
+    }
+}
